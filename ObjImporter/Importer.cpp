@@ -1,5 +1,6 @@
 #include "Importer.h"
 #include <string>
+#include <vector>
 
 using namespace std;
 
@@ -53,6 +54,21 @@ extern "C" {
 		{
 			return Vector2(x + V, y + V);
 		}
+	};
+
+	struct MeshStruct
+	{
+		string name;
+		string fileName;
+		vector<Vector3> vertices;
+		vector<Vector3>normals;
+		vector<Vector3> faces;
+		vector<Vector2> uv;
+		vector<Vector2> uv1;
+		vector<Vector2> uv2;
+		vector<int> triangles;
+		vector<int> faceVerts;
+		vector<int> faceUVs;
 	};
 
 	int ImportObj(string path) {
