@@ -61,7 +61,7 @@ vector<int> tris;
 
 Point3* albedo = (Point3*)malloc(sizeof(Point3));
 float smoothness;
-const char* texture;
+string texture;
 
 Sizes *sizes = new Sizes();
 
@@ -193,8 +193,7 @@ void CreateMat() {
 		}
 
 		if (pieces[0] == "map_Kd") {
-			string fullPath = info.thePath + '/' + pieces[1];
-			texture = fullPath.c_str();
+			texture = info.thePath + '/' + pieces[1];
 		}
 	}
 }
@@ -251,6 +250,6 @@ extern "C" {
 	}
 
 	const char* GetTexture() {
-		return texture;
+		return &texture[0];
 	}
 }
