@@ -1,8 +1,8 @@
 #include "ObjLoader.h"
+#include "Structures.h"
 #include <string>
 #include <vector>
 #include <fstream>
-#include <sstream>
 
 using namespace std;
 
@@ -33,6 +33,13 @@ struct Point2
 	}
 };
 
+struct Info {
+	string thePath;
+	string objName;
+	string matName;
+	string texName;
+} info;
+
 struct Sizes {
 	int vSize;
 	int nSize;
@@ -47,15 +54,14 @@ struct Sizes {
 	}
 };
 
-string thePath;
-string objName;
-string matName;
-string texName;
-
 vector<Point3> vertices;
 vector<Point3> normals;
 vector<Point2> uvs;
 vector<int> tris;
+
+Point3 albedo;
+float smoothness;
+const char* texture;
 
 Sizes *sizes = new Sizes();
 
@@ -87,8 +93,8 @@ void CreateMesh(string path)
 	vector<Point3> fc;
 	vector<int> fi;
 	
-	thePath = path.substr(0, path.find_last_of("\\/"));
-	objName = path.substr(path.find_last_of("\\/") + 1);
+	info.thePath = path.substr(0, path.find_last_of("\\/"));
+	info.objName = path.substr(path.find_last_of("\\/") + 1);
 
 	string line;
 	ifstream file(path);
@@ -99,7 +105,7 @@ void CreateMesh(string path)
 			vector<string> pieces = split(line, space);
 
 			if (pieces[0] == "mtllib") {
-				matName = pieces[1];
+				info.matName = pieces[1];
 				continue;
 			}
 			
@@ -160,6 +166,39 @@ void CreateMesh(string path)
 	}
 }
 
+void CreateMat() {
+	char space = ' ';
+
+	string line;
+	ifstream file(info.thePath + '/' + info.matName);
+
+	while (getline(file, line)) {
+		vector<string> pieces = split(line, space);
+
+		if (pieces.size() < 1) continue;
+
+		if (pieces[0] == "newmtl") {
+			info.matName = pieces[1];
+			continue;
+		}
+
+		if (pieces[0] == "Kd") {
+			albedo = Point3(stof(pieces[1]), stof(pieces[2]), stof(pieces[3]));
+			continue;
+		}
+
+		if (pieces[0] == "Ks") {
+			smoothness = (stof(pieces[1]), stof(pieces[2]), stof(pieces[3])) / 3;
+			continue;
+		}
+
+		if (pieces[0] == "map_Kd") {
+			string fullPath = info.thePath + '/' + pieces[1];
+			texture = fullPath.c_str();
+		}
+	}
+}
+
 void Initialize() {
 	vertices.clear();
 	normals.clear();
@@ -168,10 +207,8 @@ void Initialize() {
 }
 
 extern "C" {
-	void ImportFile(const char *path)
-	{
+	void ImportObj(string path) {
 		string filePath(path);
-
 		Initialize();
 		CreateMesh(filePath);
 	}
@@ -199,5 +236,21 @@ extern "C" {
 
 	int* GetTris() {
 		return &tris[0];
+	}
+
+	void ImportMat() {
+		CreateMat();
+	}
+
+	Point3* GetColor() {
+		return &albedo;
+	}
+
+	float GetGloss() {
+		return smoothness;
+	}
+
+	const char* GetTexture() {
+		return texture;
 	}
 }

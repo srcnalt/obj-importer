@@ -20,10 +20,8 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ObjLoader.cpp" />
-    <ClCompile Include="MtlLoader.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="MtlLoader.h" />
     <ClInclude Include="ObjLoader.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
