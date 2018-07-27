@@ -3,9 +3,6 @@
 #include <vector>
 #include <fstream>
 #include <sstream>
-#include <map>
-#include <iostream>
-#include <algorithm>
 
 using namespace std;
 
@@ -48,10 +45,6 @@ struct Sizes {
 		tSize = 0;
 		uSize = 0;
 	}
-};
-
-struct Material {
-
 };
 
 string thePath;
