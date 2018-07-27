@@ -39,27 +39,30 @@ struct Point2
 struct Sizes {
 	int vSize;
 	int nSize;
-	int fSize;
+	int tSize;
 	int uSize;
 
 	inline Sizes() {
 		vSize = 0;
 		nSize = 0;
-		fSize = 0;
+		tSize = 0;
 		uSize = 0;
 	}
+};
+
+struct Material {
+
 };
 
 string thePath;
 string objName;
 string matName;
 string texName;
+
 vector<Point3> vertices;
 vector<Point3> normals;
 vector<Point2> uvs;
-vector<int> triangles;
-vector<int> faceIndexes;
-vector<Point3> faces;
+vector<int> tris;
 
 Sizes *sizes = new Sizes();
 
@@ -88,6 +91,8 @@ void CreateMesh(string path)
 	vector<Point3> vx;
 	vector<Point2> uv;
 	vector<Point3> nr;
+	vector<Point3> fc;
+	vector<int> fi;
 	
 	thePath = path.substr(0, path.find_last_of("\\/"));
 	objName = path.substr(path.find_last_of("\\/") + 1);
@@ -122,7 +127,7 @@ void CreateMesh(string path)
 
 			if (pieces[0] == "f") {
 				int j = 1;
-				faceIndexes.clear();
+				fi.clear();
 				while (j < pieces.size() && 0 < pieces[j].size())
 				{
 					Point3 temp;
@@ -134,8 +139,8 @@ void CreateMesh(string path)
 						temp.y = facePieces[1] != "" ? stoi(facePieces[1]) : 0;
 						temp.z = stoi(facePieces[2]);
 					}
-					faces.push_back(temp);
-					faceIndexes.push_back(f);
+					fc.push_back(temp);
+					fi.push_back(f);
 
 					j++;
 					f++;
@@ -144,22 +149,29 @@ void CreateMesh(string path)
 				j = 1;
 
 				while (j + 2 < pieces.size()) {
-					triangles.push_back(faceIndexes[0]);
-					triangles.push_back(faceIndexes[j]);
-					triangles.push_back(faceIndexes[j + 1]);
+					tris.push_back(fi[0]);
+					tris.push_back(fi[j]);
+					tris.push_back(fi[j + 1]);
 					j++;
 				}
 			}
 		}
 	}
 
-	for (int i = 0; i < faces.size(); i++)
+	for (int i = 0; i < fc.size(); i++)
 	{
-		vertices.push_back(vx[(int)faces[i].x - 1]);
+		vertices.push_back(vx[(int)fc[i].x - 1]);
 
-		if (faces[i].y >= 1) uvs.push_back(uv[(int)faces[i].y - 1]);
-		if (faces[i].z >= 1) normals.push_back(nr[(int)faces[i].z - 1]);
+		if (fc[i].y >= 1) uvs.push_back(uv[(int)fc[i].y - 1]);
+		if (fc[i].z >= 1) normals.push_back(nr[(int)fc[i].z - 1]);
 	}
+}
+
+void Initialize() {
+	vertices.clear();
+	normals.clear();
+	tris.clear();
+	uvs.clear();
 }
 
 extern "C" {
@@ -167,15 +179,14 @@ extern "C" {
 	{
 		string filePath(path);
 
+		Initialize();
 		CreateMesh(filePath);
-
-		//return mesh;
 	}
 
 	Sizes* GetSizes() {
 		sizes->vSize = vertices.size();
 		sizes->nSize = normals.size();
-		sizes->fSize = faces.size();
+		sizes->tSize = tris.size();
 		sizes->uSize = uvs.size();
 
 		return sizes;
@@ -193,7 +204,7 @@ extern "C" {
 		return &uvs[0];
 	}
 
-	int* GetFaces() {
-		return &triangles[0];
+	int* GetTris() {
+		return &tris[0];
 	}
 }
