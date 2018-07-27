@@ -1,4 +1,13 @@
-﻿using System;
+﻿/*
+*	ObjLoader by Sercan Altundas 2018
+*	
+*	ModelLoader can be used for loading an .obj and .mtl file.
+*	Attach this MonoBehavior to a game object with MeshFilter and MeshRenderer
+*	Call LoadModel method with the path of the .obj file
+*
+*/
+
+using System;
 using System.IO;
 using UnityEngine;
 using System.Runtime.InteropServices;
