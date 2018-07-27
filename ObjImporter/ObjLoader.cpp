@@ -134,11 +134,11 @@ bool CreateMesh(string path)
 
 	int f = 0;
 
-	vector<Point3> vx;
-	vector<Point2> uv;
-	vector<Point3> nr;
-	vector<Point3> fc;
-	vector<int> fi;
+	vector<Point3> vertexList;
+	vector<Point2> uvList;
+	vector<Point3> normalList;
+	vector<Point3> faceList;
+	vector<int> faceIndex;
 	
 	info.thePath = path.substr(0, path.find_last_of("\\/"));
 	info.objName = path.substr(path.find_last_of("\\/") + 1);
@@ -165,26 +165,26 @@ bool CreateMesh(string path)
 			
 			if (pieces[0] == "v")
 			{
-				vx.push_back(Point3(stof(pieces[1]), stof(pieces[2]), stof(pieces[3])));
+				vertexList.push_back(Point3(stof(pieces[1]), stof(pieces[2]), stof(pieces[3])));
 				continue;
 			}
 
 			if (pieces[0] == "vt")
 			{
-				uv.push_back(Point2(stof(pieces[1]), stof(pieces[2])));
+				uvList.push_back(Point2(stof(pieces[1]), stof(pieces[2])));
 				continue;
 			}
 
 			if (pieces[0] == "vn")
 			{
-				nr.push_back(Point3(stof(pieces[1]), stof(pieces[2]), stof(pieces[3])));
+				normalList.push_back(Point3(stof(pieces[1]), stof(pieces[2]), stof(pieces[3])));
 				continue;
 			}
 
 			if (pieces[0] == "f")
 			{
 				int j = 1;
-				fi.clear();
+				faceIndex.clear();
 
 				while (j < pieces.size() && 0 < pieces[j].size())
 				{
@@ -198,8 +198,8 @@ bool CreateMesh(string path)
 						temp.z = stoi(facePieces[2]);
 					}
 
-					fc.push_back(temp);
-					fi.push_back(f);
+					faceList.push_back(temp);
+					faceIndex.push_back(f);
 
 					j++;
 					f++;
@@ -209,9 +209,9 @@ bool CreateMesh(string path)
 
 				while (j + 2 < pieces.size())
 				{
-					tris.push_back(fi[0]);
-					tris.push_back(fi[j]);
-					tris.push_back(fi[j + 1]);
+					tris.push_back(faceIndex[0]);
+					tris.push_back(faceIndex[j]);
+					tris.push_back(faceIndex[j + 1]);
 
 					j++;
 				}
@@ -219,17 +219,17 @@ bool CreateMesh(string path)
 		}
 	}
 
-	for (int i = 0; i < fc.size(); i++)
+	for (int i = 0; i < faceList.size(); i++)
 	{
-		vertices.push_back(vx[(int)fc[i].x - 1]);
+		vertices.push_back(vertexList[(int)faceList[i].x - 1]);
 
-		if (fc[i].y >= 1) {
-			uvs.push_back(uv[(int)fc[i].y - 1]);
+		if (faceList[i].y >= 1) {
+			uvs.push_back(uvList[(int)faceList[i].y - 1]);
 		}
 
-		if (fc[i].z >= 1)
+		if (faceList[i].z >= 1)
 		{
-			normals.push_back(nr[(int)fc[i].z - 1]);
+			normals.push_back(normalList[(int)faceList[i].z - 1]);
 		}
 	}
 }
@@ -286,6 +286,9 @@ void Initialize()
 	normals.clear();
 	tris.clear();
 	uvs.clear();
+	albedo = new Point3();
+	smoothness = 0;
+	texture = "";
 }
 
 extern "C"
