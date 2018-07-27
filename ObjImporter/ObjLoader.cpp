@@ -59,7 +59,7 @@ vector<Point3> normals;
 vector<Point2> uvs;
 vector<int> tris;
 
-Point3 albedo;
+Point3* albedo = (Point3*)malloc(sizeof(Point3));
 float smoothness;
 const char* texture;
 
@@ -183,7 +183,7 @@ void CreateMat() {
 		}
 
 		if (pieces[0] == "Kd") {
-			albedo = Point3(stof(pieces[1]), stof(pieces[2]), stof(pieces[3]));
+			albedo[0] = Point3(stof(pieces[1]), stof(pieces[2]), stof(pieces[3]));
 			continue;
 		}
 
@@ -207,7 +207,7 @@ void Initialize() {
 }
 
 extern "C" {
-	void ImportObj(string path) {
+	void ImportObj(const char *path) {
 		string filePath(path);
 		Initialize();
 		CreateMesh(filePath);
@@ -243,7 +243,7 @@ extern "C" {
 	}
 
 	Point3* GetColor() {
-		return &albedo;
+		return albedo;
 	}
 
 	float GetGloss() {
