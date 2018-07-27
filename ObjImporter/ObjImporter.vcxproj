@@ -19,10 +19,12 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Importer.cpp" />
+    <ClCompile Include="ObjLoader.cpp" />
+    <ClCompile Include="MtlLoader.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Importer.h" />
+    <ClInclude Include="MtlLoader.h" />
+    <ClInclude Include="ObjLoader.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>15.0</VCProjectVersion>
