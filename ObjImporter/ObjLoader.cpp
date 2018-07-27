@@ -1,16 +1,23 @@
 #include "ObjLoader.h"
-#include "Structures.h"
 #include <string>
 #include <vector>
 #include <fstream>
+#include <sstream>
 
 using namespace std;
 
 struct Point3
 {
-	float x, y, z = 0;
+	float x;
+	float y;
+	float z;
 
-	inline Point3() {};
+	inline Point3()
+	{
+		x = 0.0f;
+		y = 0.0f;
+		z = 0.0f;
+	};
 
 	inline Point3(float x, float y, float z)
 	{
@@ -22,9 +29,14 @@ struct Point3
 
 struct Point2
 {
-	float x, y = 0;
+	float x;
+	float y;
 
-	inline Point2() {};
+	inline Point2()
+	{
+		x = 0.0f;
+		y = 0.0f;
+	};
 
 	inline Point2(const float x, const float y)
 	{
@@ -33,20 +45,23 @@ struct Point2
 	}
 };
 
-struct Info {
+struct Info
+{
 	string thePath;
 	string objName;
 	string matName;
 	string texName;
 } info;
 
-struct Sizes {
+struct Sizes
+{
 	int vSize;
 	int nSize;
 	int tSize;
 	int uSize;
 
-	inline Sizes() {
+	inline Sizes()
+	{
 		vSize = 0;
 		nSize = 0;
 		tSize = 0;
@@ -65,16 +80,31 @@ string texture;
 
 Sizes *sizes = new Sizes();
 
-bool validateLine(string str) {
-	return	str.find("f ") == 0 || str.find("v ") == 0 || str.find("vt ") == 0 || str.find("vn ") == 0 || str.find("mtllib ") == 0;
+bool validateObjLine(string str)
+{
+	return	str.find("f ") == 0 ||
+			str.find("v ") == 0 ||
+			str.find("vt ") == 0 ||
+			str.find("vn ") == 0 ||
+			str.find("mtllib ") == 0;
 }
 
-vector<string> split(string str, char delimineter) {
+bool validateMatLine(string str)
+{
+	return	str.find("Kd ") == 0 ||
+			str.find("Ks ") == 0 ||
+			str.find("newmtl ") == 0 ||
+			str.find("map_Kd ") == 0;
+}
+
+vector<string> split(string str, char delimineter)
+{
 	vector<string> pieces;
 	stringstream stream(str);
 	string token;
 
-	while (getline(stream, token, delimineter)) {
+	while (getline(stream, token, delimineter))
+	{
 		pieces.push_back(token);
 	}
 
@@ -87,6 +117,7 @@ void CreateMesh(string path)
 	char slash = '/';
 
 	int f = 0;
+
 	vector<Point3> vx;
 	vector<Point2> uv;
 	vector<Point3> nr;
@@ -99,9 +130,11 @@ void CreateMesh(string path)
 	string line;
 	ifstream file(path);
 
-	while (getline(file, line)) {
+	while (getline(file, line))
+	{
 		
-		if (validateLine(line)) {
+		if (validateObjLine(line))
+		{
 			vector<string> pieces = split(line, space);
 
 			if (pieces[0] == "mtllib") {
@@ -109,24 +142,29 @@ void CreateMesh(string path)
 				continue;
 			}
 			
-			if (pieces[0] == "v") {
+			if (pieces[0] == "v")
+			{
 				vx.push_back(Point3(stof(pieces[1]), stof(pieces[2]), stof(pieces[3])));
 				continue;
 			}
 
-			if (pieces[0] == "vt") {
+			if (pieces[0] == "vt")
+			{
 				uv.push_back(Point2(stof(pieces[1]), stof(pieces[2])));
 				continue;
 			}
 
-			if (pieces[0] == "vn") {
+			if (pieces[0] == "vn")
+			{
 				nr.push_back(Point3(stof(pieces[1]), stof(pieces[2]), stof(pieces[3])));
 				continue;
 			}
 
-			if (pieces[0] == "f") {
+			if (pieces[0] == "f")
+			{
 				int j = 1;
 				fi.clear();
+
 				while (j < pieces.size() && 0 < pieces[j].size())
 				{
 					Point3 temp;
@@ -138,6 +176,7 @@ void CreateMesh(string path)
 						temp.y = facePieces[1] != "" ? stoi(facePieces[1]) : 0;
 						temp.z = stoi(facePieces[2]);
 					}
+
 					fc.push_back(temp);
 					fi.push_back(f);
 
@@ -147,10 +186,12 @@ void CreateMesh(string path)
 
 				j = 1;
 
-				while (j + 2 < pieces.size()) {
+				while (j + 2 < pieces.size())
+				{
 					tris.push_back(fi[0]);
 					tris.push_back(fi[j]);
 					tris.push_back(fi[j + 1]);
+
 					j++;
 				}
 			}
@@ -161,58 +202,75 @@ void CreateMesh(string path)
 	{
 		vertices.push_back(vx[(int)fc[i].x - 1]);
 
-		if (fc[i].y >= 1) uvs.push_back(uv[(int)fc[i].y - 1]);
-		if (fc[i].z >= 1) normals.push_back(nr[(int)fc[i].z - 1]);
+		if (fc[i].y >= 1) {
+			uvs.push_back(uv[(int)fc[i].y - 1]);
+		}
+
+		if (fc[i].z >= 1)
+		{
+			normals.push_back(nr[(int)fc[i].z - 1]);
+		}
 	}
 }
 
-void CreateMat() {
+void CreateMat()
+{
 	char space = ' ';
 
 	string line;
 	ifstream file(info.thePath + '/' + info.matName);
 
-	while (getline(file, line)) {
-		vector<string> pieces = split(line, space);
+	while (getline(file, line))
+	{
+		if (validateMatLine(line))
+		{
+			vector<string> pieces = split(line, space);
 
-		if (pieces.size() < 1) continue;
+			if (pieces[0] == "newmtl")
+			{
+				info.matName = pieces[1];
+				continue;
+			}
 
-		if (pieces[0] == "newmtl") {
-			info.matName = pieces[1];
-			continue;
-		}
+			if (pieces[0] == "Kd")
+			{
+				albedo[0] = Point3(stof(pieces[1]), stof(pieces[2]), stof(pieces[3]));
+				continue;
+			}
 
-		if (pieces[0] == "Kd") {
-			albedo[0] = Point3(stof(pieces[1]), stof(pieces[2]), stof(pieces[3]));
-			continue;
-		}
+			if (pieces[0] == "Ks")
+			{
+				smoothness = (stof(pieces[1]), stof(pieces[2]), stof(pieces[3])) / 3;
+				continue;
+			}
 
-		if (pieces[0] == "Ks") {
-			smoothness = (stof(pieces[1]), stof(pieces[2]), stof(pieces[3])) / 3;
-			continue;
-		}
-
-		if (pieces[0] == "map_Kd") {
-			texture = info.thePath + '/' + pieces[1];
+			if (pieces[0] == "map_Kd")
+			{
+				texture = info.thePath + '/' + pieces[1];
+			}
 		}
 	}
 }
 
-void Initialize() {
+void Initialize()
+{
 	vertices.clear();
 	normals.clear();
 	tris.clear();
 	uvs.clear();
 }
 
-extern "C" {
-	void ImportObj(const char *path) {
+extern "C"
+{
+	void ImportObj(const char *path)
+	{
 		string filePath(path);
 		Initialize();
 		CreateMesh(filePath);
 	}
 
-	Sizes* GetSizes() {
+	Sizes* GetSizes()
+	{
 		sizes->vSize = vertices.size();
 		sizes->nSize = normals.size();
 		sizes->tSize = tris.size();
@@ -221,35 +279,43 @@ extern "C" {
 		return sizes;
 	}
 
-	Point3* GetVertices() {
+	Point3* GetVertices()
+	{
 		return &vertices[0];
 	}
 
-	Point3* GetNormals() {
+	Point3* GetNormals()
+	{
 		return &normals[0];
 	}
 
-	Point2* GetUVs() {
+	Point2* GetUVs()
+	{
 		return &uvs[0];
 	}
 
-	int* GetTris() {
+	int* GetTris()
+	{
 		return &tris[0];
 	}
 
-	void ImportMat() {
+	void ImportMat()
+	{
 		CreateMat();
 	}
 
-	Point3* GetColor() {
+	Point3* GetColor()
+	{
 		return albedo;
 	}
 
-	float GetGloss() {
+	float GetGloss()
+	{
 		return smoothness;
 	}
 
-	const char* GetTexture() {
+	const char* GetTexture()
+	{
 		return &texture[0];
 	}
 }

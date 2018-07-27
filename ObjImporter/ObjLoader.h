@@ -1,9 +1,11 @@
 #define DLL_API __declspec(dllexport) 
 
-extern "C" {
+extern "C"
+{
 	struct Sizes;
 	struct Point3;
 	struct Point2;
+
 	DLL_API Sizes* GetSizes();
 	DLL_API Point3* GetVertices();
 	DLL_API Point3* GetNormals();
