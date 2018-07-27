@@ -1,3 +1,19 @@
+/*
+*	ObjLoader by Sercan Altundas 2018
+*
+*	This small Dll file helps you acquire some of the attributes of an .obj file
+*	The information that can be extracted is limited by faces, vertices, UVs and normals of a model.
+*	
+*	If the .obj file cntains a material the script can also extract .mtl information.
+*	For now only one material is taken from the .mtl file and the others are ignore.
+*	The information that can be extracted is limited by color and glossiness.
+*	These two values can match to Unity standart shaders albedo and smoothness values.
+*
+*	The Dll does not support all attributes of an .obj or .mtl file.
+*	It is best the Dll is used on single mesh model with single texture and material.
+*
+*/
+
 #include "ObjLoader.h"
 #include <string>
 #include <vector>
@@ -111,7 +127,7 @@ vector<string> split(string str, char delimineter)
 	return pieces;
 }
 
-void CreateMesh(string path)
+bool CreateMesh(string path)
 {
 	char space = ' ';
 	char slash = '/';
@@ -129,6 +145,11 @@ void CreateMesh(string path)
 
 	string line;
 	ifstream file(path);
+
+	if (!file.good())
+	{
+		return false;
+	}
 
 	while (getline(file, line))
 	{
@@ -213,12 +234,19 @@ void CreateMesh(string path)
 	}
 }
 
-void CreateMat()
+bool CreateMat()
 {
+	if (info.matName == "") false;
+
 	char space = ' ';
 
 	string line;
 	ifstream file(info.thePath + '/' + info.matName);
+
+	if (!file.good())
+	{
+		return false;
+	}
 
 	while (getline(file, line))
 	{
@@ -262,11 +290,11 @@ void Initialize()
 
 extern "C"
 {
-	void ImportObj(const char *path)
+	bool ImportObj(const char *path)
 	{
 		string filePath(path);
 		Initialize();
-		CreateMesh(filePath);
+		return CreateMesh(filePath);
 	}
 
 	Sizes* GetSizes()
@@ -299,9 +327,9 @@ extern "C"
 		return &tris[0];
 	}
 
-	void ImportMat()
+	bool ImportMat()
 	{
-		CreateMat();
+		return CreateMat();
 	}
 
 	Point3* GetColor()
